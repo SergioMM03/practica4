@@ -1,11 +1,23 @@
 const initialBudget = () => {
-  const localStorageBudget = localStorage.getItem('budget')
-  return localStorageBudget ? parseFloat(localStorageBudget) : 0
+  if (typeof window === 'undefined') return 0
+
+  const localStorageBudget = window.localStorage.getItem('budget')
+  const parsedBudget = Number.parseFloat(localStorageBudget ?? '0')
+  return Number.isFinite(parsedBudget) ? parsedBudget : 0
 }
 
 const localStorageExpenses = () => {
-  const expenses = localStorage.getItem('expenses')
-  return expenses ? JSON.parse(expenses) : []
+  if (typeof window === 'undefined') return []
+
+  const expenses = window.localStorage.getItem('expenses')
+  if (!expenses) return []
+
+  try {
+    const parsedExpenses = JSON.parse(expenses)
+    return Array.isArray(parsedExpenses) ? parsedExpenses : []
+  } catch {
+    return []
+  }
 }
 
 export const initialState = {

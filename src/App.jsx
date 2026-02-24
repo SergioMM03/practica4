@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import { BudgetForm } from './components/BudgetForm'
 import { BudgetTracker } from './components/BudgetTracker'
 import ExpenseModal from './components/ExpenseModal'
