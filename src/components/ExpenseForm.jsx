@@ -1,18 +1,26 @@
 import { useContext, useState } from 'react'
 import { categories } from '../data/categories'
-import { BudgetDispatchContext } from '../context/BudgetContexts'
+import { BudgetDispatchContext, BudgetStateContext } from '../context/BudgetContexts'
 import ErrorMessage from './ErrorMessage'
 
 export const ExpenseForm = () => {
-  const [expense, setExpense] = useState({
-    expenseName: '',
-    amount: 0,
-    category: '',
-    date: new Date(),
-  })
+  const dispatch = useContext(BudgetDispatchContext)
+  const state = useContext(BudgetStateContext)
+
+  const editingExpense = state.expenses.find((currentExpense) => currentExpense.id === state.editingId)
+
+  const [expense, setExpense] = useState(
+    editingExpense
+      ? { ...editingExpense, date: new Date(editingExpense.date) }
+      : {
+          expenseName: '',
+          amount: 0,
+          category: '',
+          date: new Date(),
+        },
+  )
 
   const [error, setError] = useState('')
-  const dispatch = useContext(BudgetDispatchContext)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -34,12 +42,25 @@ export const ExpenseForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (Object.values(expense).includes('')) {
+    if (Object.values(expense).includes('') || expense.amount <= 0) {
       setError('Todos los Campos son Obligatorios')
       return
     }
 
-    dispatch({ type: 'add-expense', payload: { expense } })
+    const totalWithoutEdited = state.expenses
+      .filter((item) => item.id !== state.editingId)
+      .reduce((total, item) => total + item.amount, 0)
+
+    if (totalWithoutEdited + expense.amount > state.budget) {
+      setError('El gasto total no puede exceder el presupuesto')
+      return
+    }
+
+    if (state.editingId) {
+      dispatch({ type: 'update-expense', payload: { expense: { ...expense, id: state.editingId } } })
+    } else {
+      dispatch({ type: 'add-expense', payload: { expense } })
+    }
 
     setError('')
     setExpense({
@@ -53,7 +74,7 @@ export const ExpenseForm = () => {
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <legend className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2">
-        Nuevo gasto
+        {state.editingId ? 'Guardar cambios' : 'Nuevo gasto'}
       </legend>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -109,10 +130,11 @@ export const ExpenseForm = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="amount" className="text-xl">
+        <label htmlFor="date" className="text-xl">
           Fecha Gasto:
         </label>
         <input
+          id="date"
           type="date"
           className="bg-slate-100 p-2 border-0"
           value={expense.date.toISOString().split('T')[0]}
@@ -123,7 +145,7 @@ export const ExpenseForm = () => {
       <input
         type="submit"
         className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg"
-        value="Registrar gasto"
+        value={state.editingId ? 'Guardar cambios' : 'Registrar gasto'}
       />
     </form>
   )
