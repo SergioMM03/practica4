@@ -7,6 +7,12 @@ import { BudgetStateContext } from './context/BudgetContexts'
 function App() {
   const { budget } = useContext(BudgetStateContext)
   const isValidBudget = budget > 0
+=======
+import { BudgetStateContext } from './context/BudgetContexts'
+
+function App() {
+  const state = useContext(BudgetStateContext)
+  const isValidBudget = state.budget > 0
 
   return (
     <>
