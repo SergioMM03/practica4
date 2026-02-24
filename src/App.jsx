@@ -1,6 +1,13 @@
 import { useContext } from 'react'
 import { BudgetForm } from './components/BudgetForm'
 import { BudgetTracker } from './components/BudgetTracker'
+import ExpenseModal from './components/ExpenseModal'
+import { BudgetStateContext } from './context/BudgetContexts'
+
+function App() {
+  const { budget } = useContext(BudgetStateContext)
+  const isValidBudget = budget > 0
+=======
 import { BudgetStateContext } from './context/BudgetContexts'
 
 function App() {
@@ -15,9 +22,13 @@ function App() {
         </h1>
       </header>
 
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg mt-10 p-10">
-        {isValidBudget ? <BudgetTracker /> : <BudgetForm />}
-      </div>
+      <main className="max-w-3xl mx-auto py-10">
+        <div className="bg-white shadow-lg rounded-lg p-10">
+          {isValidBudget ? <BudgetTracker /> : <BudgetForm />}
+        </div>
+
+        {isValidBudget && <ExpenseModal />}
+      </main>
     </>
   )
 }
